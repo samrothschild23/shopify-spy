@@ -703,10 +703,24 @@
     const storeName    = fmt(d.store_name || d.name || d.shop_name, inputUrl);
     const products     = d.products || d.top_products || [];
     const productCount = d.product_count ?? d.products_count ?? products.length;
-    const collections  = d.collections || [];
-    const apps         = d.apps || d.installed_apps || [];
-    const theme        = d.theme || d.theme_name || null;
-    const themeVersion = d.theme_version || null;
+    // Handle collections — may be array of objects or strings
+    const rawCollections = d.collections || d.collections_preview || [];
+    const collections = rawCollections.map(c => typeof c === 'string' ? c : (c.title || c.name || c.handle || ''));
+
+    // Handle apps — may be array of strings or objects
+    const rawApps = d.detected_apps || d.apps || d.installed_apps || [];
+    const apps = rawApps.map(a => typeof a === 'string' ? a : (a.name || a.title || JSON.stringify(a)));
+
+    // Handle tracking pixels separately
+    const pixels = d.tracking_pixels || [];
+
+    // Handle theme — actor returns {name, id} object
+    const themeObj = d.theme || null;
+    const theme = themeObj ? (typeof themeObj === 'string' ? themeObj : (themeObj.name || null)) : (d.theme_name || null);
+    const themeVersion = d.theme_version || (themeObj && themeObj.id ? `ID: ${themeObj.id}` : null);
+
+    // Social links
+    const socialLinks = d.social_links || {};
     const currency     = d.currency || 'USD';
 
     // Prices
@@ -817,15 +831,37 @@
             <span class="card-badge">${apps.length}</span>
           </div>
           <div class="chip-list">
-            ${apps.map(a => {
-              const name = typeof a === 'string' ? a : (a.name || a.app_name || String(a));
-              return `<span class="chip chip-accent">${escHtml(name)}</span>`;
-            }).join('')}
+            ${apps.map(a => `<span class="chip chip-accent">${escHtml(a)}</span>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- Tracking Pixels -->
+        ${pixels.length > 0 ? `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📡</span>
+            <span class="card-title">Tracking Pixels</span>
+            <span class="card-badge">${pixels.length}</span>
+          </div>
+          <div class="chip-list">
+            ${pixels.map(p => `<span class="chip" style="color:var(--yellow)">${escHtml(typeof p === 'string' ? p : (p.name || String(p)))}</span>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- Social Links -->
+        ${Object.keys(socialLinks).length > 0 ? `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🔗</span>
+            <span class="card-title">Social Links</span>
+          </div>
+          <div class="chip-list">
+            ${Object.entries(socialLinks).map(([k, v]) => `<a href="${escHtml(v)}" target="_blank" rel="noopener" class="chip chip-accent" style="text-decoration:none">${escHtml(k)}</a>`).join('')}
           </div>
         </div>` : ''}
 
         <!-- Collections -->
-        ${collections.length > 0 ? `
+        ${collections.filter(Boolean).length > 0 ? `
         <div class="card">
           <div class="card-header">
             <span class="card-icon">🛒</span>
@@ -833,10 +869,7 @@
             <span class="card-badge">${collections.length}</span>
           </div>
           <div class="chip-list">
-            ${collections.slice(0, 20).map(c => {
-              const name = typeof c === 'string' ? c : (c.title || c.name || String(c));
-              return `<span class="chip">${escHtml(name)}</span>`;
-            }).join('')}
+            ${collections.slice(0, 20).filter(Boolean).map(c => `<span class="chip">${escHtml(c)}</span>`).join('')}
             ${collections.length > 20 ? `<span class="chip" style="color:var(--muted)">+${collections.length - 20} more</span>` : ''}
           </div>
         </div>` : ''}
