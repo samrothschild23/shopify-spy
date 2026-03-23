@@ -15,13 +15,17 @@
       --bg: #0f0f13;
       --surface: #1a1a22;
       --surface2: #22222e;
+      --surface3: #2a2a38;
       --border: #2e2e3e;
       --accent: #6c47ff;
       --accent2: #9b7aff;
       --green: #22c55e;
       --yellow: #eab308;
       --red: #ef4444;
+      --orange: #f97316;
       --blue: #3b82f6;
+      --teal: #14b8a6;
+      --pink: #ec4899;
       --text: #f0f0f8;
       --muted: #8888aa;
       --radius: 12px;
@@ -226,8 +230,8 @@
     /* ── Results ── */
     #resultsBox {
       display: none;
-      max-width: 900px;
-      margin: 40px auto 80px;
+      max-width: 1100px;
+      margin: 40px auto 0;
       padding: 0 20px;
     }
 
@@ -269,12 +273,62 @@
     .share-btn:hover { background: var(--border); }
     .share-btn.copied { color: var(--green); border-color: var(--green); }
 
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── Intelligence Summary ── */
+    .intel-summary {
+      background: linear-gradient(135deg, rgba(108,71,255,0.12) 0%, rgba(20,184,166,0.06) 100%);
+      border: 1px solid rgba(108,71,255,0.25);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.3s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intel-summary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--teal));
+    }
+
+    .intel-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .intel-text {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Section layout ── */
+    .section { margin-bottom: 28px; }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Cards ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -283,20 +337,6 @@
       animation: fadeUp 0.4s ease both;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .card:nth-child(1) { animation-delay: 0.05s; }
-    .card:nth-child(2) { animation-delay: 0.10s; }
-    .card:nth-child(3) { animation-delay: 0.15s; }
-    .card:nth-child(4) { animation-delay: 0.20s; }
-    .card:nth-child(5) { animation-delay: 0.25s; }
-    .card:nth-child(6) { animation-delay: 0.30s; }
-
-    .card-wide { grid-column: 1 / -1; }
-
     .card-header {
       display: flex;
       align-items: center;
@@ -304,10 +344,7 @@
       margin-bottom: 16px;
     }
 
-    .card-icon {
-      font-size: 20px;
-      line-height: 1;
-    }
+    .card-icon { font-size: 20px; line-height: 1; }
 
     .card-title {
       font-size: 15px;
@@ -325,92 +362,385 @@
       border-radius: 99px;
     }
 
-    /* Stat cards */
-    .stat-value {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -1px;
-      color: var(--text);
+    /* ── Overview card ── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 24px;
     }
 
-    .stat-label {
+    .ov-item {}
+    .ov-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .ov-value { font-size: 16px; font-weight: 600; margin-top: 2px; }
+
+    .store-desc {
       font-size: 13px;
       color: var(--muted);
+      line-height: 1.5;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .scraped-time {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── Two-column top grid ── */
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 700px) {
+      .top-grid { grid-template-columns: 1fr; }
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Products grid ── */
+    .products-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .products-count-label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .products-count-label strong { color: var(--text); }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .products-grid { grid-template-columns: 1fr; }
+    }
+
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, transform 0.15s;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .product-card:hover {
+      border-color: rgba(108,71,255,0.4);
+      transform: translateY(-2px);
+    }
+
+    .product-img-wrap {
+      width: 100%;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-placeholder {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .product-body {
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .product-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-vendor {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .product-price-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
       margin-top: 2px;
     }
 
-    /* Price range */
-    .price-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 4px;
+    .product-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--green);
     }
 
-    .price-item { text-align: center; }
-    .price-item .pv { font-size: 22px; font-weight: 700; }
-    .price-item .pl { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .product-compare {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: line-through;
+    }
 
+    .discount-badge {
+      background: rgba(239,68,68,0.15);
+      color: #fca5a5;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 99px;
+      border: 1px solid rgba(239,68,68,0.25);
+    }
+
+    .product-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .avail-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    .avail-badge.in-stock {
+      background: rgba(34,197,94,0.12);
+      color: var(--green);
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+
+    .avail-badge.out-stock {
+      background: rgba(239,68,68,0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+
+    .variants-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .product-view-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent2);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .product-view-link:hover { text-decoration: underline; }
+
+    /* ── Pricing Intelligence card ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .price-stat {
+      text-align: center;
+      padding: 12px 8px;
+      background: var(--surface2);
+      border-radius: 10px;
+    }
+
+    .price-stat .pv { font-size: 22px; font-weight: 700; }
+    .price-stat .pl { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
     .price-min .pv { color: var(--green); }
     .price-avg .pv { color: var(--accent2); }
     .price-max .pv { color: var(--yellow); }
 
-    /* Product list */
-    .product-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .pricing-extra {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
 
-    .product-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 10px 14px;
+    .pricing-extra-item {
       background: var(--surface2);
       border-radius: 8px;
-      font-size: 14px;
+      padding: 10px 12px;
     }
 
-    .product-name { flex: 1; min-width: 0; }
-    .product-name strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .product-type { font-size: 12px; color: var(--muted); }
+    .pricing-extra-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pricing-extra-value { font-size: 15px; font-weight: 700; margin-top: 2px; }
 
-    .product-price {
-      font-weight: 700;
-      color: var(--accent2);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    /* Tags / chips */
-    .chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .chip {
+    .price-bar-wrap { margin-top: 14px; }
+    .price-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+    .price-bar-track {
+      height: 6px;
       background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 13px;
-      padding: 4px 12px;
       border-radius: 99px;
+      overflow: hidden;
+    }
+    .price-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--accent2), var(--yellow));
+      border-radius: 99px;
+      transition: width 0.6s ease;
     }
 
-    .chip-accent {
-      background: rgba(108,71,255,0.15);
-      border-color: rgba(108,71,255,0.3);
-      color: var(--accent2);
-    }
-
-    /* Theme card */
-    .theme-name {
-      font-size: 24px;
-      font-weight: 700;
+    /* ── Tech stack card ── */
+    .theme-name-big {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
       margin-bottom: 4px;
     }
 
-    .theme-meta { font-size: 13px; color: var(--muted); }
+    .theme-meta-line { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+
+    .tech-section { margin-top: 14px; }
+    .tech-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .chip-list { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 99px;
+      border: 1px solid transparent;
+    }
+
+    .chip-purple  { background: rgba(108,71,255,0.15); color: var(--accent2); border-color: rgba(108,71,255,0.3); }
+    .chip-blue    { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3); }
+    .chip-yellow  { background: rgba(234,179,8,0.15); color: #fde047; border-color: rgba(234,179,8,0.3); }
+    .chip-green   { background: rgba(34,197,94,0.15); color: #86efac; border-color: rgba(34,197,94,0.3); }
+    .chip-pink    { background: rgba(236,72,153,0.15); color: #f9a8d4; border-color: rgba(236,72,153,0.3); }
+    .chip-teal    { background: rgba(20,184,166,0.15); color: #5eead4; border-color: rgba(20,184,166,0.3); }
+    .chip-orange  { background: rgba(249,115,22,0.15); color: #fdba74; border-color: rgba(249,115,22,0.3); }
+    .chip-default { background: var(--surface2); color: var(--text); border-color: var(--border); }
+
+    .pixel-summary {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── Collections card ── */
+    .collection-chip {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .collection-chip:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    /* ── Social links ── */
+    .social-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .social-link:hover {
+      border-color: var(--accent2);
+      background: var(--surface3);
+      text-decoration: none;
+    }
+
+    .social-icon { font-size: 18px; line-height: 1; }
+
+    /* ── Bottom two columns ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 700px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
 
     /* ── CTA ── */
     #ctaBox {
       display: none;
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto 60px;
       padding: 0 20px;
     }
@@ -420,20 +750,38 @@
       border: 1px solid rgba(108,71,255,0.3);
       border-radius: 16px;
       padding: 36px 40px;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
       align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      flex-wrap: wrap;
+    }
+
+    @media (max-width: 640px) {
+      .cta-card { grid-template-columns: 1fr; padding: 24px 20px; }
+    }
+
+    .cta-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent2);
+      margin-bottom: 8px;
     }
 
     .cta-left h2 {
       font-size: 22px;
       font-weight: 800;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
-    .cta-left p { color: var(--muted); font-size: 15px; max-width: 440px; }
+    .cta-product-count {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .cta-product-count strong { color: var(--text); }
 
     .cta-features {
       display: flex;
@@ -445,27 +793,37 @@
     .cta-feature {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-size: 13px;
       color: var(--muted);
     }
 
     .cta-feature::before { content: '✓'; color: var(--green); font-weight: 700; }
 
+    .cta-social-proof {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .cta-right { flex-shrink: 0; text-align: center; }
 
     .cta-price {
-      font-size: 40px;
+      font-size: 42px;
       font-weight: 800;
-      letter-spacing: -1px;
+      letter-spacing: -1.5px;
       color: var(--text);
+      line-height: 1;
     }
 
     .cta-price span { font-size: 16px; color: var(--muted); font-weight: 400; }
 
     .cta-btn {
       display: inline-block;
-      margin-top: 12px;
+      margin-top: 14px;
       background: linear-gradient(135deg, var(--accent), #8b5cf6);
       color: #fff;
       border: none;
@@ -492,13 +850,13 @@
       border-top: 1px solid var(--border);
     }
 
-    /* ── Mobile ── */
+    /* ── Responsive ── */
     @media (max-width: 600px) {
       header { padding: 40px 20px 28px; }
       .input-row { flex-direction: column; gap: 8px; padding: 10px; }
       #analyzeBtn { width: 100%; padding: 12px; }
-      .cta-card { padding: 24px 20px; }
-      .cta-right { width: 100%; }
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); }
+      .pricing-extra { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -577,33 +935,23 @@
   const resultsBox = document.getElementById('resultsBox');
   const ctaBox     = document.getElementById('ctaBox');
 
-  // Pre-fill from ?url= query param
   const params = new URLSearchParams(location.search);
   if (params.get('url')) {
     urlInput.value = params.get('url');
     runAnalysis();
   }
 
-  exampleBtn.addEventListener('click', () => {
-    urlInput.value = 'allbirds.com';
-    runAnalysis();
-  });
-
+  exampleBtn.addEventListener('click', () => { urlInput.value = 'allbirds.com'; runAnalysis(); });
   analyzeBtn.addEventListener('click', runAnalysis);
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') runAnalysis(); });
 
-  urlInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') runAnalysis();
-  });
-
-  // ── Loading step animation ──
   let stepTimer = null;
   const steps = document.querySelectorAll('.loading-step');
 
   function startLoadingAnimation() {
     let current = 0;
-    steps.forEach(s => { s.classList.remove('active', 'done'); });
+    steps.forEach(s => s.classList.remove('active', 'done'));
     steps[0].classList.add('active');
-
     stepTimer = setInterval(() => {
       if (current < steps.length - 1) {
         steps[current].classList.remove('active');
@@ -619,34 +967,25 @@
     steps.forEach(s => s.classList.remove('active'));
   }
 
-  // ── Main analysis ──
   async function runAnalysis() {
     const raw = urlInput.value.trim();
-    if (!raw) {
-      showError('Please enter a store URL.');
-      return;
-    }
+    if (!raw) { showError('Please enter a store URL.'); return; }
 
     setUI('loading');
     startLoadingAnimation();
 
     try {
-      const res = await fetch(`/analyze?url=${encodeURIComponent(raw)}`);
+      const res  = await fetch(`/analyze?url=${encodeURIComponent(raw)}`);
       const json = await res.json();
-
-      if (!res.ok || json.error) {
-        throw new Error(json.error || 'Unknown error');
-      }
+      if (!res.ok || json.error) throw new Error(json.error || 'Unknown error');
 
       stopLoadingAnimation();
       renderResults(json.data, raw);
       setUI('results');
 
-      // Update URL for sharing
       const shareUrl = new URL(location.href);
       shareUrl.searchParams.set('url', raw);
       history.replaceState({}, '', shareUrl.toString());
-
     } catch (err) {
       stopLoadingAnimation();
       showError(err.message);
@@ -660,224 +999,358 @@
     resultsBox.style.display = 'none';
     ctaBox.style.display     = 'none';
     analyzeBtn.disabled      = false;
-
-    if (state === 'loading') {
-      loadingBox.style.display = 'block';
-      analyzeBtn.disabled = true;
-    } else if (state === 'results') {
-      resultsBox.style.display = 'block';
-      ctaBox.style.display = 'block';
-    } else if (state === 'error') {
-      errorBox.style.display = 'block';
-    }
+    if (state === 'loading') { loadingBox.style.display = 'block'; analyzeBtn.disabled = true; }
+    else if (state === 'results') { resultsBox.style.display = 'block'; ctaBox.style.display = 'block'; }
+    else if (state === 'error') { errorBox.style.display = 'block'; }
   }
 
-  function showError(msg) {
-    errorText.textContent = msg;
-    errorBox.style.display = 'block';
-  }
+  function showError(msg) { errorText.textContent = msg; errorBox.style.display = 'block'; }
 
-  // ── Render helpers ──
-  function fmt(val, fallback = '—') {
-    return val !== null && val !== undefined && val !== '' ? val : fallback;
+  // ── Helpers ──
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function fmtPrice(n) {
-    if (n === null || n === undefined) return '—';
+    if (n === null || n === undefined || isNaN(n)) return '—';
     return '$' + Number(n).toFixed(2).replace(/\.00$/, '');
   }
 
-  function escHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function fmtPriceN(n) {
+    if (n === null || n === undefined || isNaN(n)) return null;
+    return '$' + Number(n).toFixed(2).replace(/\.00$/, '');
   }
 
-  // ── Render results ──
+  function countryFlag(country) {
+    if (!country) return '';
+    const flags = {
+      'US': '🇺🇸', 'USA': '🇺🇸', 'United States': '🇺🇸',
+      'CA': '🇨🇦', 'Canada': '🇨🇦',
+      'GB': '🇬🇧', 'UK': '🇬🇧', 'United Kingdom': '🇬🇧',
+      'AU': '🇦🇺', 'Australia': '🇦🇺',
+      'DE': '🇩🇪', 'Germany': '🇩🇪',
+      'FR': '🇫🇷', 'France': '🇫🇷',
+      'NL': '🇳🇱', 'Netherlands': '🇳🇱',
+      'SE': '🇸🇪', 'Sweden': '🇸🇪',
+      'NO': '🇳🇴', 'Norway': '🇳🇴',
+      'NZ': '🇳🇿', 'New Zealand': '🇳🇿',
+    };
+    return flags[country] || '';
+  }
+
+  function socialIcon(platform) {
+    const icons = {
+      instagram: '📸', twitter: '🐦', x: '🐦', facebook: '👥',
+      tiktok: '🎵', youtube: '📺', pinterest: '📌', linkedin: '💼',
+      snapchat: '👻', reddit: '🤖',
+    };
+    return icons[platform.toLowerCase()] || '🔗';
+  }
+
+  function socialLabel(platform) {
+    const labels = {
+      instagram: 'Instagram', twitter: 'Twitter', x: 'X (Twitter)',
+      facebook: 'Facebook', tiktok: 'TikTok', youtube: 'YouTube',
+      pinterest: 'Pinterest', linkedin: 'LinkedIn', snapchat: 'Snapchat',
+    };
+    return labels[platform.toLowerCase()] || platform.charAt(0).toUpperCase() + platform.slice(1);
+  }
+
+  // App category → chip color
+  function appChipClass(name) {
+    const n = name.toLowerCase();
+    if (/klaviyo|mailchimp|email|sms|omnisend|postscript|attentive/.test(n)) return 'chip-blue';
+    if (/yotpo|stamped|review|judge|okendo|loox/.test(n)) return 'chip-yellow';
+    if (/smile|loyalty|referral|swell|yotpo loyalty/.test(n)) return 'chip-green';
+    if (/recharge|bold|subscription|skio|stay/.test(n)) return 'chip-teal';
+    if (/search|filter|boost|searchpie/.test(n)) return 'chip-pink';
+    if (/upsell|cross.sell|zipify|reconvert/.test(n)) return 'chip-orange';
+    return 'chip-purple';
+  }
+
+  // Build AI-style intel summary
+  function buildSummary(d, storeName, products, collections, apps, pixels, avgPrice, currency, theme) {
+    const country   = d.country || '';
+    const flag      = countryFlag(country);
+    const loc       = (flag ? flag + ' ' : '') + (country ? country + '-based ' : '');
+    const totalCols = d.total_collections || collections.length;
+    const topApps   = apps.slice(0, 3).join(', ');
+    const priceStr  = avgPrice ? ` Their average selling price is ${fmtPrice(avgPrice)} ${currency}.` : '';
+    const themeStr  = theme ? ` Their storefront runs on the <strong>${esc(theme)}</strong> theme.` : '';
+    const appsStr   = topApps ? ` Tech stack includes ${esc(topApps)}${apps.length > 3 ? ` and ${apps.length - 3} more apps` : ''}.` : '';
+    const pixelStr  = pixels.length > 0 ? ` Running ${pixels.length} tracking pixel${pixels.length > 1 ? 's' : ''}.` : '';
+    const saleCount = products.filter(p => p.compare_at_price && p.compare_at_price > p.price).length;
+    const saleStr   = saleCount > 0 ? ` ${saleCount} products are currently on sale.` : '';
+
+    return `<strong>${esc(storeName)}</strong> is a ${loc}Shopify store selling <strong>${products.length} products</strong> across <strong>${totalCols} collections</strong>.${priceStr}${saleStr}${themeStr}${appsStr}${pixelStr}`;
+  }
+
+  // ── Main render ──
   function renderResults(data, inputUrl) {
-    // Normalise data — the actor may return nested or flat
     const d = data?.result || data || {};
+    const scrapedAt = Date.now();
 
-    const storeName    = fmt(d.store_name || d.name || d.shop_name, inputUrl);
-    const products     = d.products || d.top_products || [];
-    const productCount = d.product_count ?? d.products_count ?? products.length;
-    // Handle collections — may be array of objects or strings
-    const rawCollections = d.collections || d.collections_preview || [];
-    const collections = rawCollections.map(c => typeof c === 'string' ? c : (c.title || c.name || c.handle || ''));
-
-    // Handle apps — may be array of strings or objects
-    const rawApps = d.detected_apps || d.apps || d.installed_apps || [];
-    const apps = rawApps.map(a => typeof a === 'string' ? a : (a.name || a.title || JSON.stringify(a)));
-
-    // Handle tracking pixels separately
-    const pixels = d.tracking_pixels || [];
-
-    // Handle theme — actor returns {name, id} object
-    const themeObj = d.theme || null;
-    const theme = themeObj ? (typeof themeObj === 'string' ? themeObj : (themeObj.name || null)) : (d.theme_name || null);
-    const themeVersion = d.theme_version || (themeObj && themeObj.id ? `ID: ${themeObj.id}` : null);
-
-    // Social links
-    const socialLinks = d.social_links || {};
+    const storeName    = d.store_name || d.name || d.shop_name || inputUrl;
+    const description  = d.description || '';
     const currency     = d.currency || 'USD';
+    const country      = d.country || '';
+    const totalCols    = d.total_collections;
+
+    const products     = d.top_products || d.products || [];
+    const rawColls     = d.collections_preview || d.collections || [];
+    const apps         = (d.detected_apps || d.apps || []).map(a => typeof a === 'string' ? a : (a.name || String(a)));
+    const pixels       = (d.tracking_pixels || []).map(p => typeof p === 'string' ? p : (p.name || String(p)));
+    const socialLinks  = d.social_links || {};
+
+    const themeObj     = d.theme || null;
+    const theme        = themeObj ? (typeof themeObj === 'string' ? themeObj : (themeObj.name || null)) : (d.theme_name || null);
+    const themeId      = themeObj && typeof themeObj === 'object' ? themeObj.id : null;
 
     // Prices
-    const prices = products
-      .map(p => {
-        const price = p.price ?? p.min_price ?? p.price_min;
-        return typeof price === 'string' ? parseFloat(price) : price;
-      })
-      .filter(p => typeof p === 'number' && !isNaN(p) && p > 0);
+    const prices = products.map(p => {
+      const v = p.price ?? p.min_price ?? p.price_min;
+      return typeof v === 'string' ? parseFloat(v) : (typeof v === 'number' ? v : null);
+    }).filter(v => v !== null && !isNaN(v) && v > 0);
 
     const minPrice = prices.length ? Math.min(...prices) : null;
     const maxPrice = prices.length ? Math.max(...prices) : null;
-    const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : null;
+    const avgPrice = prices.length ? prices.reduce((a,b) => a+b, 0) / prices.length : null;
+    const onSaleCount = products.filter(p => p.compare_at_price && p.compare_at_price > p.price).length;
+    const onSalePct = prices.length ? Math.round(onSaleCount / products.length * 100) : 0;
 
-    // Share button
+    // Most common price
+    const priceBuckets = {};
+    prices.forEach(p => {
+      const k = p.toFixed(2);
+      priceBuckets[k] = (priceBuckets[k] || 0) + 1;
+    });
+    const mostCommonPrice = Object.entries(priceBuckets).sort((a,b) => b[1]-a[1])[0];
+
     const shareUrl = new URL(location.href);
     shareUrl.searchParams.set('url', inputUrl);
 
-    resultsBox.innerHTML = `
+    const summaryText = buildSummary(d, storeName, products, rawColls, apps, pixels, avgPrice, currency, theme);
+
+    // ── HTML ──
+    let html = `
       <div class="results-header">
         <div>
-          <div class="results-title">🔍 Spy Report: ${escHtml(storeName)}</div>
-          <div class="results-url">${escHtml(inputUrl)}</div>
+          <div class="results-title">🔍 Spy Report: ${esc(storeName)}</div>
+          <div class="results-url">${esc(inputUrl)}</div>
         </div>
         <button class="share-btn" id="shareBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Share Report
         </button>
       </div>
-      <div class="cards-grid">
 
-        <!-- Products count -->
-        <div class="card">
+      <!-- Intelligence Summary -->
+      <div class="intel-summary">
+        <div class="intel-label">⚡ Competitive Intelligence</div>
+        <div class="intel-text">${summaryText}</div>
+      </div>
+
+      <!-- Top row: Overview + Pricing -->
+      <div class="top-grid">
+
+        <!-- Store Overview -->
+        <div class="card" style="animation-delay:0.05s">
           <div class="card-header">
-            <span class="card-icon">📦</span>
-            <span class="card-title">Products</span>
+            <span class="card-icon">🏪</span>
+            <span class="card-title">Store Overview</span>
           </div>
-          <div class="stat-value">${productCount !== null && productCount !== undefined ? Number(productCount).toLocaleString() : '—'}</div>
-          <div class="stat-label">total products in catalog</div>
+          <div class="overview-grid">
+            <div class="ov-item">
+              <div class="ov-label">Store</div>
+              <div class="ov-value">${esc(storeName)}</div>
+            </div>
+            <div class="ov-item">
+              <div class="ov-label">Currency</div>
+              <div class="ov-value">${esc(currency)}</div>
+            </div>
+            ${country ? `
+            <div class="ov-item">
+              <div class="ov-label">Country</div>
+              <div class="ov-value">${countryFlag(country)} ${esc(country)}</div>
+            </div>` : ''}
+            <div class="ov-item">
+              <div class="ov-label">Collections</div>
+              <div class="ov-value">${totalCols !== undefined && totalCols !== null ? totalCols : (rawColls.length || '—')}</div>
+            </div>
+          </div>
+          ${description ? `<div class="store-desc">${esc(description.slice(0, 200))}${description.length > 200 ? '…' : ''}</div>` : ''}
+          <div class="scraped-time">⏱ Scraped just now</div>
         </div>
 
-        <!-- Pricing -->
-        <div class="card">
+        <!-- Pricing Intelligence -->
+        <div class="card" style="animation-delay:0.10s">
           <div class="card-header">
             <span class="card-icon">💰</span>
-            <span class="card-title">Pricing</span>
-            ${currency ? `<span class="card-badge">${escHtml(currency)}</span>` : ''}
+            <span class="card-title">Pricing Intelligence</span>
+            <span class="card-badge">${esc(currency)}</span>
           </div>
-          <div class="price-row">
-            <div class="price-item price-min">
+          <div class="pricing-grid">
+            <div class="price-stat price-min">
               <div class="pv">${fmtPrice(minPrice)}</div>
               <div class="pl">Min</div>
             </div>
-            <div class="price-item price-avg">
+            <div class="price-stat price-avg">
               <div class="pv">${fmtPrice(avgPrice)}</div>
               <div class="pl">Avg</div>
             </div>
-            <div class="price-item price-max">
+            <div class="price-stat price-max">
               <div class="pv">${fmtPrice(maxPrice)}</div>
               <div class="pl">Max</div>
             </div>
           </div>
+          <div class="pricing-extra">
+            <div class="pricing-extra-item">
+              <div class="pricing-extra-label">On Sale</div>
+              <div class="pricing-extra-value" style="color:var(--red)">${onSalePct}%</div>
+            </div>
+            <div class="pricing-extra-item">
+              <div class="pricing-extra-label">Top Price</div>
+              <div class="pricing-extra-value" style="color:var(--accent2)">${mostCommonPrice ? fmtPrice(parseFloat(mostCommonPrice[0])) : '—'}</div>
+            </div>
+          </div>
+          ${minPrice !== null && maxPrice !== null && maxPrice > 0 ? `
+          <div class="price-bar-wrap">
+            <div class="price-bar-label"><span>${fmtPrice(minPrice)}</span><span>${fmtPrice(maxPrice)}</span></div>
+            <div class="price-bar-track">
+              <div class="price-bar-fill" style="width:100%"></div>
+            </div>
+          </div>` : ''}
         </div>
 
-        <!-- Theme -->
-        <div class="card">
+      </div>
+
+      <!-- Products section -->
+      ${products.length > 0 ? `
+      <div class="section">
+        <div class="products-header">
+          <div class="section-label" style="margin-bottom:0">Products</div>
+          <div class="products-count-label"><strong>${products.length} products</strong> found</div>
+        </div>
+        <div class="products-grid">
+          ${products.map((p, i) => {
+            const title    = p.title || p.name || 'Unknown Product';
+            const vendor   = p.vendor || '';
+            const price    = p.price ?? p.min_price ?? p.price_min;
+            const priceFmt = fmtPriceN(price);
+            const cmpPrice = p.compare_at_price;
+            const disc     = p.discount_percent ? Math.round(p.discount_percent) : (cmpPrice && cmpPrice > price ? Math.round((1 - price/cmpPrice)*100) : 0);
+            const avail    = p.available !== false;
+            const variants = p.variants || [];
+            const imgUrl   = p.image_url || null;
+            const prodUrl  = p.url || null;
+            const delay    = Math.min(i * 0.03, 0.6);
+
+            return `<div class="product-card" style="animation-delay:${delay}s">
+              <div class="product-img-wrap">
+                ${imgUrl
+                  ? `<img src="${esc(imgUrl)}" alt="${esc(title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\"product-placeholder\\">${esc(title.charAt(0).toUpperCase())}</div>'">`
+                  : `<div class="product-placeholder">${esc(title.charAt(0).toUpperCase())}</div>`
+                }
+              </div>
+              <div class="product-body">
+                <div class="product-title">${esc(title)}</div>
+                ${vendor ? `<div class="product-vendor">${esc(vendor)}</div>` : ''}
+                <div class="product-price-row">
+                  ${priceFmt ? `<span class="product-price">${esc(priceFmt)}</span>` : ''}
+                  ${cmpPrice && cmpPrice > price ? `<span class="product-compare">${fmtPrice(cmpPrice)}</span>` : ''}
+                  ${disc > 0 ? `<span class="discount-badge">-${disc}%</span>` : ''}
+                </div>
+                <div class="product-meta-row">
+                  <span class="avail-badge ${avail ? 'in-stock' : 'out-stock'}">${avail ? 'In Stock' : 'Out of Stock'}</span>
+                  ${variants.length > 0 ? `<span class="variants-label">${variants.length} variant${variants.length !== 1 ? 's' : ''}</span>` : ''}
+                  ${prodUrl ? `<a href="${esc(prodUrl)}" target="_blank" rel="noopener" class="product-view-link">View →</a>` : ''}
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- Theme & Tech Stack + Collections -->
+      <div class="bottom-grid">
+
+        <!-- Theme & Tech Stack -->
+        <div class="card" style="animation-delay:0.15s">
           <div class="card-header">
             <span class="card-icon">🎨</span>
-            <span class="card-title">Theme</span>
+            <span class="card-title">Theme &amp; Tech Stack</span>
           </div>
           ${theme
-            ? `<div class="theme-name">${escHtml(theme)}</div>
-               ${themeVersion ? `<div class="theme-meta">Version ${escHtml(String(themeVersion))}</div>` : '<div class="theme-meta">Active theme</div>'}`
-            : `<div style="color:var(--muted);font-size:14px;">Theme not detected</div>`
+            ? `<div class="theme-name-big">${esc(theme)}</div>
+               <div class="theme-meta-line">${themeId ? `Theme ID: ${esc(String(themeId))}` : 'Active theme'}</div>`
+            : `<div style="color:var(--muted);font-size:14px;margin-bottom:14px;">Theme not detected</div>`
           }
+
+          ${apps.length > 0 ? `
+          <div class="tech-section">
+            <div class="tech-section-label">Installed Apps (${apps.length})</div>
+            <div class="chip-list">
+              ${apps.map(a => `<span class="chip ${appChipClass(a)}">${esc(a)}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+          ${pixels.length > 0 ? `
+          <div class="tech-section">
+            <div class="tech-section-label">Tracking Pixels</div>
+            <div class="chip-list">
+              ${pixels.map(p => `<span class="chip chip-orange">${esc(p)}</span>`).join('')}
+            </div>
+            <div class="pixel-summary">⚠️ This store is tracking visitors with ${pixels.length} pixel${pixels.length !== 1 ? 's' : ''}</div>
+          </div>` : ''}
         </div>
 
-        <!-- Top products -->
-        ${products.length > 0 ? `
-        <div class="card card-wide">
-          <div class="card-header">
-            <span class="card-icon">🛍️</span>
-            <span class="card-title">Top Products</span>
-            <span class="card-badge">${Math.min(products.length, 5)} of ${productCount ?? products.length}</span>
-          </div>
-          <ul class="product-list">
-            ${products.slice(0, 5).map(p => {
-              const name  = p.title || p.name || p.product_title || 'Unknown product';
-              const type  = p.product_type || p.type || '';
-              const price = p.price ?? p.min_price ?? p.price_min;
-              return `<li class="product-item">
-                <div class="product-name">
-                  <strong>${escHtml(name)}</strong>
-                  ${type ? `<span class="product-type">${escHtml(type)}</span>` : ''}
-                </div>
-                <span class="product-price">${price != null ? fmtPrice(price) : '—'}</span>
-              </li>`;
-            }).join('')}
-          </ul>
-        </div>` : ''}
-
-        <!-- Apps -->
-        ${apps.length > 0 ? `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-icon">🔌</span>
-            <span class="card-title">Installed Apps</span>
-            <span class="card-badge">${apps.length}</span>
-          </div>
-          <div class="chip-list">
-            ${apps.map(a => `<span class="chip chip-accent">${escHtml(a)}</span>`).join('')}
-          </div>
-        </div>` : ''}
-
-        <!-- Tracking Pixels -->
-        ${pixels.length > 0 ? `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-icon">📡</span>
-            <span class="card-title">Tracking Pixels</span>
-            <span class="card-badge">${pixels.length}</span>
-          </div>
-          <div class="chip-list">
-            ${pixels.map(p => `<span class="chip" style="color:var(--yellow)">${escHtml(typeof p === 'string' ? p : (p.name || String(p)))}</span>`).join('')}
-          </div>
-        </div>` : ''}
-
-        <!-- Social Links -->
-        ${Object.keys(socialLinks).length > 0 ? `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-icon">🔗</span>
-            <span class="card-title">Social Links</span>
-          </div>
-          <div class="chip-list">
-            ${Object.entries(socialLinks).map(([k, v]) => `<a href="${escHtml(v)}" target="_blank" rel="noopener" class="chip chip-accent" style="text-decoration:none">${escHtml(k)}</a>`).join('')}
-          </div>
-        </div>` : ''}
-
         <!-- Collections -->
-        ${collections.filter(Boolean).length > 0 ? `
-        <div class="card">
+        ${rawColls.length > 0 ? `
+        <div class="card" style="animation-delay:0.20s">
           <div class="card-header">
             <span class="card-icon">🛒</span>
             <span class="card-title">Collections</span>
-            <span class="card-badge">${collections.length}</span>
+            <span class="card-badge">${totalCols !== undefined && totalCols !== null ? totalCols : rawColls.length}</span>
           </div>
           <div class="chip-list">
-            ${collections.slice(0, 20).filter(Boolean).map(c => `<span class="chip">${escHtml(c)}</span>`).join('')}
-            ${collections.length > 20 ? `<span class="chip" style="color:var(--muted)">+${collections.length - 20} more</span>` : ''}
+            ${rawColls.map(c => {
+              const title  = typeof c === 'string' ? c : (c.title || c.name || c.handle || '');
+              const url    = typeof c === 'object' ? (c.url || null) : null;
+              if (!title) return '';
+              return url
+                ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="collection-chip">${esc(title)}</a>`
+                : `<span class="collection-chip">${esc(title)}</span>`;
+            }).filter(Boolean).join('')}
           </div>
         </div>` : ''}
 
       </div>
+
+      <!-- Social Links -->
+      ${Object.keys(socialLinks).length > 0 ? `
+      <div class="section">
+        <div class="section-label">Social Presence</div>
+        <div class="card" style="animation-delay:0.25s">
+          <div class="card-header">
+            <span class="card-icon">🔗</span>
+            <span class="card-title">Social Links</span>
+            <span class="card-badge">${Object.keys(socialLinks).length} platforms</span>
+          </div>
+          <div class="social-grid">
+            ${Object.entries(socialLinks).map(([platform, url]) => url ? `
+              <a href="${esc(url)}" target="_blank" rel="noopener" class="social-link">
+                <span class="social-icon">${socialIcon(platform)}</span>
+                <span>${socialLabel(platform)}</span>
+              </a>` : '').filter(Boolean).join('')}
+          </div>
+        </div>
+      </div>` : ''}
     `;
 
-    // Share button handler
+    resultsBox.innerHTML = html;
+
+    // Share button
     document.getElementById('shareBtn').addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(shareUrl.toString());
@@ -888,30 +1361,34 @@
           btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share Report`;
           btn.classList.remove('copied');
         }, 2000);
-      } catch {
-        prompt('Copy this link:', shareUrl.toString());
-      }
+      } catch { prompt('Copy this link:', shareUrl.toString()); }
     });
 
-    // Render CTA
+    // CTA
+    const totalProductCount = d.product_count ?? d.products_count ?? products.length;
     ctaBox.innerHTML = `
       <div class="cta-card">
         <div class="cta-left">
-          <h2>Unlock unlimited competitor intelligence</h2>
-          <p>Track changes over time, monitor pricing shifts, get alerts when competitors add new products or switch apps.</p>
+          <div class="cta-eyebrow">🚀 Unlock Full Intelligence</div>
+          <h2>Track this store — and every competitor</h2>
+          <p class="cta-product-count">
+            You're seeing <strong>${products.length} products</strong>.
+            ${totalProductCount > products.length ? `The full store has <strong>${totalProductCount}</strong>.` : ''}
+          </p>
           <div class="cta-features">
-            <span class="cta-feature">Unlimited analyses</span>
-            <span class="cta-feature">Daily change tracking</span>
-            <span class="cta-feature">Price drop alerts</span>
+            <span class="cta-feature">Daily price change tracking</span>
             <span class="cta-feature">New product alerts</span>
-            <span class="cta-feature">CSV export</span>
+            <span class="cta-feature">App stack monitoring</span>
+            <span class="cta-feature">Export to CSV</span>
             <span class="cta-feature">Multi-store dashboard</span>
+            <span class="cta-feature">Unlimited analyses</span>
           </div>
+          <div class="cta-social-proof">👥 Join 500+ e-commerce founders already using ShopifySpy</div>
         </div>
         <div class="cta-right">
           <div class="cta-price">$29<span>/mo</span></div>
-          <a href="mailto:sam@shopifyspy.io?subject=Join%20Waitlist&body=I'd%20like%20to%20join%20the%20ShopifySpy%20waitlist!" class="cta-btn">Join Waitlist</a>
-          <div class="cta-note">Early bird pricing · Cancel anytime</div>
+          <a href="mailto:sam@shopifyspy.io?subject=Start%20Free%20Trial&body=I'd%20like%20to%20start%20my%20ShopifySpy%20free%20trial!" class="cta-btn">Start Free Trial</a>
+          <div class="cta-note">No credit card · Cancel anytime</div>
         </div>
       </div>
     `;
