@@ -11,7 +11,7 @@ const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const LEMONSQUEEZY_API_KEY = process.env.LEMONSQUEEZY_API_KEY;
 const ACTOR_ID = 'o1Utd0sitgdDan3Bw';
 
-// Simple in-memory rate limiter: 3 analyses per IP per hour
+// Simple in-memory rate limiter: 1 analysis per IP per hour
 const rateLimitMap = new Map();
 
 // License key store: key → { key, activatedAt, expiresAt, instanceId }
@@ -31,7 +31,7 @@ function isLicenseValid(key) {
 function checkRateLimit(ip) {
   const now = Date.now();
   const windowMs = 60 * 60 * 1000; // 1 hour
-  const limit = 3;
+  const limit = 1;
 
   if (!rateLimitMap.has(ip)) {
     rateLimitMap.set(ip, []);
@@ -132,7 +132,7 @@ app.get('/analyze', async (req, res) => {
     const rateCheck = checkRateLimit(ip);
     if (!rateCheck.allowed) {
       return res.status(429).json({
-        error: `Rate limit reached. You can run 3 free analyses per hour. Try again in ${rateCheck.resetMin} minute(s).`
+        error: `Rate limit reached. Free plan allows 1 analysis per hour. Try again in ${rateCheck.resetMin} minute(s), or unlock unlimited access with Pro.`
       });
     }
   }
