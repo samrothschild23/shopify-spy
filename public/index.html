@@ -850,6 +850,168 @@
       border-top: 1px solid var(--border);
     }
 
+    /* ── Plan badge ── */
+    .plan-badge-wrap {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      z-index: 100;
+    }
+
+    .plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: default;
+    }
+
+    .plan-badge.free {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .plan-badge.pro {
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.35);
+      color: var(--green);
+    }
+
+    /* ── Pro upsell modal ── */
+    #proModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #proModal.visible { display: flex; }
+
+    .pro-modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px 28px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      animation: fadeUp 0.25s ease both;
+    }
+
+    .pro-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    .pro-modal-close:hover { color: var(--text); }
+
+    .pro-modal-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .pro-modal-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .pro-modal-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .pro-modal-btn {
+      display: inline-block;
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.1s;
+      margin-bottom: 20px;
+    }
+
+    .pro-modal-btn:hover { opacity: 0.9; transform: translateY(-1px); text-decoration: none; }
+
+    .pro-modal-divider {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .activate-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    #licenseInput {
+      flex: 1;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+      transition: border-color 0.2s;
+    }
+
+    #licenseInput:focus { border-color: var(--accent); }
+    #licenseInput::placeholder { color: var(--muted); }
+
+    #activateBtn {
+      background: var(--surface3);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    #activateBtn:hover { background: var(--border); }
+    #activateBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #activateMsg {
+      margin-top: 10px;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    #activateMsg.success { color: var(--green); }
+    #activateMsg.error { color: #fca5a5; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       header { padding: 40px 20px 28px; }
@@ -861,6 +1023,27 @@
   </style>
 </head>
 <body>
+
+  <div class="plan-badge-wrap">
+    <div class="plan-badge free" id="planBadge">Free Plan</div>
+  </div>
+
+  <!-- Pro upsell modal -->
+  <div id="proModal">
+    <div class="pro-modal-card">
+      <button class="pro-modal-close" id="proModalClose" aria-label="Close">✕</button>
+      <div class="pro-modal-icon">🔓</div>
+      <div class="pro-modal-title">You've used your 3 free analyses</div>
+      <p class="pro-modal-sub">Unlock unlimited analyses for 24 hours for just $9</p>
+      <a href="https://shopifyspy.lemonsqueezy.com/checkout/buy/cccbe38f-295c-453f-bab1-ed731cfddc2e" target="_blank" class="pro-modal-btn">Get Pro Access →</a>
+      <div class="pro-modal-divider">Already have a key?</div>
+      <div class="activate-row">
+        <input type="text" id="licenseInput" placeholder="Enter your license key" autocomplete="off" spellcheck="false" />
+        <button id="activateBtn">Activate</button>
+      </div>
+      <div id="activateMsg"></div>
+    </div>
+  </div>
 
   <header>
     <div class="logo">
@@ -926,14 +1109,106 @@
 
 <script>
 (() => {
-  const urlInput   = document.getElementById('urlInput');
-  const analyzeBtn = document.getElementById('analyzeBtn');
-  const exampleBtn = document.getElementById('exampleBtn');
-  const errorBox   = document.getElementById('errorBox');
-  const errorText  = document.getElementById('errorText');
-  const loadingBox = document.getElementById('loadingBox');
-  const resultsBox = document.getElementById('resultsBox');
-  const ctaBox     = document.getElementById('ctaBox');
+  const urlInput      = document.getElementById('urlInput');
+  const analyzeBtn    = document.getElementById('analyzeBtn');
+  const exampleBtn    = document.getElementById('exampleBtn');
+  const errorBox      = document.getElementById('errorBox');
+  const errorText     = document.getElementById('errorText');
+  const loadingBox    = document.getElementById('loadingBox');
+  const resultsBox    = document.getElementById('resultsBox');
+  const ctaBox        = document.getElementById('ctaBox');
+  const proModal      = document.getElementById('proModal');
+  const proModalClose = document.getElementById('proModalClose');
+  const licenseInput  = document.getElementById('licenseInput');
+  const activateBtn   = document.getElementById('activateBtn');
+  const activateMsg   = document.getElementById('activateMsg');
+  const planBadge     = document.getElementById('planBadge');
+
+  // ── Pro license state ──
+  function getStoredLicense() {
+    try {
+      const raw = localStorage.getItem('shopifyspy_license');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (Date.now() > parsed.expiresAt) {
+        localStorage.removeItem('shopifyspy_license');
+        return null;
+      }
+      return parsed;
+    } catch { return null; }
+  }
+
+  function setStoredLicense(key, expiresAt) {
+    localStorage.setItem('shopifyspy_license', JSON.stringify({ key, expiresAt }));
+  }
+
+  function updatePlanBadge() {
+    const lic = getStoredLicense();
+    if (lic) {
+      const minsLeft = Math.ceil((lic.expiresAt - Date.now()) / 60000);
+      const hoursLeft = Math.floor(minsLeft / 60);
+      const timeStr = hoursLeft > 0 ? `${hoursLeft}h left` : `${minsLeft}m left`;
+      planBadge.className = 'plan-badge pro';
+      planBadge.textContent = `Pro ✓ ${timeStr}`;
+    } else {
+      planBadge.className = 'plan-badge free';
+      planBadge.textContent = 'Free Plan';
+    }
+  }
+
+  updatePlanBadge();
+
+  // ── Modal ──
+  function showProModal() {
+    proModal.classList.add('visible');
+    activateMsg.textContent = '';
+    activateMsg.className = '';
+    licenseInput.value = '';
+  }
+
+  function hideProModal() {
+    proModal.classList.remove('visible');
+  }
+
+  proModalClose.addEventListener('click', hideProModal);
+  proModal.addEventListener('click', e => { if (e.target === proModal) hideProModal(); });
+
+  // ── Activate flow ──
+  activateBtn.addEventListener('click', async () => {
+    const key = licenseInput.value.trim();
+    if (!key) { activateMsg.textContent = 'Please enter a license key.'; activateMsg.className = 'error'; return; }
+
+    activateBtn.disabled = true;
+    activateMsg.textContent = 'Validating…';
+    activateMsg.className = '';
+
+    try {
+      const res = await fetch('/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ licenseKey: key }),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        setStoredLicense(key, json.expiresAt);
+        updatePlanBadge();
+        activateMsg.textContent = 'Pro activated! Valid for 24 hours ✓';
+        activateMsg.className = 'success';
+        setTimeout(hideProModal, 1800);
+      } else {
+        activateMsg.textContent = json.error || 'Invalid license key';
+        activateMsg.className = 'error';
+      }
+    } catch {
+      activateMsg.textContent = 'Network error. Please try again.';
+      activateMsg.className = 'error';
+    } finally {
+      activateBtn.disabled = false;
+    }
+  });
+
+  licenseInput.addEventListener('keydown', e => { if (e.key === 'Enter') activateBtn.click(); });
 
   const params = new URLSearchParams(location.search);
   if (params.get('url')) {
@@ -975,8 +1250,20 @@
     startLoadingAnimation();
 
     try {
-      const res  = await fetch(`/analyze?url=${encodeURIComponent(raw)}`);
+      const headers = {};
+      const lic = getStoredLicense();
+      if (lic) headers['X-License-Key'] = lic.key;
+
+      const res  = await fetch(`/analyze?url=${encodeURIComponent(raw)}`, { headers });
       const json = await res.json();
+
+      if (res.status === 429) {
+        stopLoadingAnimation();
+        setUI('idle');
+        showProModal();
+        return;
+      }
+
       if (!res.ok || json.error) throw new Error(json.error || 'Unknown error');
 
       stopLoadingAnimation();
@@ -1002,6 +1289,7 @@
     if (state === 'loading') { loadingBox.style.display = 'block'; analyzeBtn.disabled = true; }
     else if (state === 'results') { resultsBox.style.display = 'block'; ctaBox.style.display = 'block'; }
     else if (state === 'error') { errorBox.style.display = 'block'; }
+    // 'idle' — reset all, re-enable button (used after modal shown)
   }
 
   function showError(msg) { errorText.textContent = msg; errorBox.style.display = 'block'; }

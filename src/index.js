@@ -8,10 +8,25 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
+const LEMONSQUEEZY_API_KEY = process.env.LEMONSQUEEZY_API_KEY;
 const ACTOR_ID = 'o1Utd0sitgdDan3Bw';
 
 // Simple in-memory rate limiter: 3 analyses per IP per hour
 const rateLimitMap = new Map();
+
+// License key store: key → { key, activatedAt, expiresAt, instanceId }
+const licenseMap = new Map();
+
+function isLicenseValid(key) {
+  if (!key) return false;
+  const entry = licenseMap.get(key);
+  if (!entry) return false;
+  if (Date.now() > entry.expiresAt) {
+    licenseMap.delete(key);
+    return false;
+  }
+  return true;
+}
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -52,6 +67,49 @@ setInterval(() => {
 app.use(express.json());
 app.use(express.static(join(__dirname, '..', 'public')));
 
+app.post('/activate', async (req, res) => {
+  const { licenseKey } = req.body;
+  if (!licenseKey) {
+    return res.status(400).json({ success: false, error: 'Missing licenseKey' });
+  }
+
+  if (!LEMONSQUEEZY_API_KEY) {
+    return res.status(500).json({ success: false, error: 'Server misconfiguration: missing LEMONSQUEEZY_API_KEY' });
+  }
+
+  try {
+    const lsRes = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LEMONSQUEEZY_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ license_key: licenseKey, instance_name: 'ShopifySpy' }),
+    });
+
+    const lsData = await lsRes.json();
+
+    if (!lsRes.ok || !lsData.valid) {
+      return res.json({ success: false, error: 'Invalid license key' });
+    }
+
+    const now = Date.now();
+    const expiresAt = now + 24 * 60 * 60 * 1000;
+    licenseMap.set(licenseKey, {
+      key: licenseKey,
+      activatedAt: now,
+      expiresAt,
+      instanceId: lsData.instance?.id || null,
+    });
+
+    return res.json({ success: true, expiresAt });
+  } catch (err) {
+    console.error('Activate error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to validate license key' });
+  }
+});
+
 app.get('/analyze', async (req, res) => {
   const { url } = req.query;
 
@@ -65,13 +123,18 @@ app.get('/analyze', async (req, res) => {
     storeUrl = 'https://' + storeUrl;
   }
 
-  // Rate limit check
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
-  const rateCheck = checkRateLimit(ip);
-  if (!rateCheck.allowed) {
-    return res.status(429).json({
-      error: `Rate limit reached. You can run 3 free analyses per hour. Try again in ${rateCheck.resetMin} minute(s).`
-    });
+  // Check license key — bypass rate limit if valid
+  const licenseKey = req.headers['x-license-key'];
+  const hasPro = isLicenseValid(licenseKey);
+
+  if (!hasPro) {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+    const rateCheck = checkRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        error: `Rate limit reached. You can run 3 free analyses per hour. Try again in ${rateCheck.resetMin} minute(s).`
+      });
+    }
   }
 
   if (!APIFY_TOKEN) {
